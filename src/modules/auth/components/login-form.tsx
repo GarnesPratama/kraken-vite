@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Lock, UserRound } from 'lucide-react'
-import { loginWithPassword } from './api'
-import { AppButton } from '@/shared/ui/button'
-import { useAppActions } from '@/app/state'
+import { loginWithPassword } from '@/services/api/auth/auth-api'
+import { AppButton } from '@/components/global/ui/button'
+import { useAppActions } from '@/store/app-store'
 
 export function LoginForm() {
   const { loginSuccess } = useAppActions()
@@ -23,11 +23,10 @@ export function LoginForm() {
   })
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-4">
+    <main className="grid min-h-screen place-items-center bg-white px-4">
       <section className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Kraken Vite</p>
+        <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Artanis</p>
         <h1 className="mt-2 text-2xl font-semibold text-white">Masuk ke workspace</h1>
-        <p className="mt-1 text-sm text-slate-400">Mode demo Axelor: gunakan username dan password yang sama.</p>
 
         <form
           className="mt-6 space-y-4"

@@ -1,14 +1,15 @@
 import { X } from 'lucide-react'
-import type { AppTab } from '@/app/state'
+import type { AppTab } from '@/store/app-store'
 
 type NavTabsProps = {
   tabs: AppTab[]
   activeTabId: string | null
   onChange: (tabId: string) => void
   onClose: (tabId: string) => void
+  getTabHref?: (tab: AppTab, index: number) => string
 }
 
-export function NavTabs({ tabs, activeTabId, onChange, onClose }: NavTabsProps) {
+export function NavTabs({ tabs, activeTabId, onChange, onClose, getTabHref }: NavTabsProps) {
   if (!tabs.length) {
     return (
       <div className="border-b border-indigo-100 bg-white px-4 py-2 text-xs text-slate-500">
@@ -20,7 +21,7 @@ export function NavTabs({ tabs, activeTabId, onChange, onClose }: NavTabsProps) 
   return (
     <div className="border-b border-indigo-100 bg-white px-2 py-1">
       <div className="flex gap-1 overflow-x-auto">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const active = tab.id === activeTabId
 
           return (
@@ -32,15 +33,17 @@ export function NavTabs({ tabs, activeTabId, onChange, onClose }: NavTabsProps) 
                   : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
               }`}
             >
-              <button
+              <a
+                href={getTabHref ? getTabHref(tab, index) : '#'}
                 onClick={() => onChange(tab.id)}
                 className="truncate text-left"
                 title={tab.title}
               >
                 {tab.title}
-              </button>
+              </a>
 
               <button
+                type="button"
                 onClick={() => onClose(tab.id)}
                 className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700"
                 aria-label={`Tutup tab ${tab.title}`}
