@@ -1,71 +1,17 @@
-import { axelorJson } from '@/lib/axelor-http'
-import type { ActionViewSummary, AppInfo, MenuItem, QuickAccessSection } from './types'
+import { axelorJson } from '@/services/http/axelor-http'
+import type { ActionExecResponse, ActionResponse, ActionViewSummary, ApiListResponse, AppInfo, FetchResponse, MenuItem, MetaViewResponse, PermsResponse, QuickAccessSection, RemoveResponse, SaveResponse, SearchResponse, SessionInfoResponse } from '@/types/menu'
 
-type ApiListResponse<T> = {
-  status: number
-  data: T[]
-}
-
-type SessionInfoResponse = {
-  application?: {
-    name?: string
-    description?: string
-  }
-  user?: {
-    name?: string
-    login?: string
-  }
-}
-
-type ActionResponse = {
-  status: number
-  data: Array<{
-    view: ActionViewSummary
-  }>
-}
-
-type SearchResponse = {
-  status: number
-  offset?: number
-  total?: number
-  data?: Array<Record<string, unknown>>
-}
-
-type SaveResponse = {
-  status: number
-  data?: Array<Record<string, unknown>>
-}
-
-type FetchResponse = {
-  status: number
-  data?: Array<Record<string, unknown>>
-}
-
-type PermsResponse = {
-  status: number
-  data?: string[]
-}
-
-type ActionExecResponse = {
-  status: number
-  data?: Array<Record<string, unknown>>
-  errors?: Record<string, string>
-}
-
-type RemoveResponse = {
-  status: number
-  data?: Array<Record<string, unknown>>
-}
 
 function normalizeAppInfo(raw: SessionInfoResponse | Record<string, unknown>): AppInfo {
-  const isLegacyMap = typeof raw['application.name'] === 'string'
+  const legacy = raw as Record<string, unknown>
+  const isLegacyMap = typeof legacy['application.name'] === 'string'
 
   if (isLegacyMap) {
     return {
-      applicationName: String(raw['application.name'] ?? 'Axelor App'),
-      applicationDescription: String(raw['application.description'] ?? ''),
-      userDisplayName: String(raw['user.name'] ?? ''),
-      userLogin: String(raw['user.login'] ?? ''),
+      applicationName: String(legacy['application.name'] ?? 'Axelor App'),
+      applicationDescription: String(legacy['application.description'] ?? ''),
+      userDisplayName: String(legacy['user.name'] ?? ''),
+      userLogin: String(legacy['user.login'] ?? ''),
     }
   }
 
@@ -96,7 +42,7 @@ export async function fetchQuickAccess(): Promise<QuickAccessSection[]> {
 export async function fetchActionView(actionName: string): Promise<ActionViewSummary | null> {
   const response = await axelorJson<ActionResponse>(`ws/action/${actionName}`, {
     method: 'POST',
-    body: {
+    jsonBody: {
       model: 'com.axelor.meta.db.MetaAction',
       data: {
         context: {},
@@ -111,10 +57,28 @@ export async function fetchActionView(actionName: string): Promise<ActionViewSum
   return response.data[0]?.view ?? null
 }
 
+export async function fetchMetaView(model: string, limit = 8, signal?: AbortSignal): Promise<Array<Record<string, unknown>>> {
+  const response = await axelorJson<MetaViewResponse>(`ws/meta/view`, {
+    method: 'POST',
+    signal,
+    jsonBody: {
+      limit,
+      offset: 0,
+      data: {},
+    },
+  })
+
+  if (response.status !== 0) {
+    throw new Error(`Data model ${model} gagal dimuat`)
+  }
+
+  return response.data ?? []
+}
+
 export async function fetchModelRecords(model: string, limit = 8): Promise<Array<Record<string, unknown>>> {
   const response = await axelorJson<SearchResponse>(`ws/rest/${model}/search`, {
     method: 'POST',
-    body: {
+    jsonBody: {
       limit,
       offset: 0,
       data: {},
@@ -131,7 +95,7 @@ export async function fetchModelRecords(model: string, limit = 8): Promise<Array
 export async function saveModelRecord(model: string, record: Record<string, unknown>): Promise<Record<string, unknown>> {
   const response = await axelorJson<SaveResponse>(`ws/rest/${model}`, {
     method: 'POST',
-    body: {
+    jsonBody: {
       data: record,
     },
   })
@@ -146,7 +110,7 @@ export async function saveModelRecord(model: string, record: Record<string, unkn
 export async function fetchModelRecord(model: string, id: number): Promise<Record<string, unknown> | null> {
   const response = await axelorJson<FetchResponse>(`ws/rest/${model}/${id}/fetch`, {
     method: 'POST',
-    body: {},
+    jsonBody: {},
   })
 
   if (response.status !== 0) {
@@ -188,7 +152,7 @@ export async function executeModelAction(input: {
 }) {
   const response = await axelorJson<ActionExecResponse>('ws/action', {
     method: 'POST',
-    body: {
+    jsonBody: {
       action: input.action,
       model: input.model,
       data: {
@@ -210,7 +174,7 @@ export async function deleteModelRecords(
 ): Promise<number> {
   const response = await axelorJson<RemoveResponse>(`ws/rest/${model}/removeAll`, {
     method: 'POST',
-    body: { records },
+    jsonBody: { records },
   })
 
   if (response.status !== 0) {

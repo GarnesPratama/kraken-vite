@@ -1,17 +1,6 @@
-import { axelorJson, axelorRequest } from '@/lib/axelor-http'
-import type { UserSession } from './types'
+import { axelorJson, axelorRequest } from '@/services/http/axelor-http'
+import type { LoginPayload, SessionInfoResponse, UserSession } from '@/types/auth'
 
-type LoginPayload = {
-  username: string
-  password: string
-}
-
-type SessionInfoResponse = {
-  user?: {
-    login?: string
-    name?: string
-  }
-}
 
 export async function loginWithPassword(payload: LoginPayload): Promise<UserSession> {
   const username = payload.username.trim()
@@ -23,7 +12,7 @@ export async function loginWithPassword(payload: LoginPayload): Promise<UserSess
 
   const loginResponse = await axelorRequest('callback', {
     method: 'POST',
-    body: { username, password },
+    jsonBody: { username, password },
   })
 
   if (!loginResponse.ok) {

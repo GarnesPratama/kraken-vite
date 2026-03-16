@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useReducer } from 'react'
 import type { ReactNode } from 'react'
-import type { UserSession } from '@/features/auth/types'
+import type { UserSession } from '@/types/auth'
 
 export type AppTab = {
   id: string
