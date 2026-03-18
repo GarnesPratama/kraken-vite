@@ -212,10 +212,6 @@ export function WorkspaceLayout() {
                 <button type="button" onClick={controller.refreshCurrentData} className="rounded p-1 hover:bg-slate-100">
                   <RefreshCw className="h-4 w-4" />
                 </button>
-                {/* <button type="button" className="flex items-center gap-1 rounded px-2 py-1 text-[#465184] hover:bg-slate-100">
-                  <Printer className="h-4 w-4" />
-                  Print catalog
-                </button> */}
               </div>
 
               <div className="flex items-center gap-3 text-sm text-slate-500">
@@ -260,7 +256,7 @@ export function WorkspaceLayout() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-hidden">
               {controller.activeActionQuery.isLoading ? <p className="px-4 py-3 text-sm text-slate-500">Memuat action view...</p> : null}
               {controller.activeActionQuery.isError ? <p className="px-4 py-3 text-sm text-red-600">Action gagal dimuat dari server.</p> : null}
               {!controller.activeTab ? <p className="px-4 py-3 text-sm text-slate-500">Pilih menu kiri untuk membuka dynamic tab view.</p> : null}
@@ -279,10 +275,13 @@ export function WorkspaceLayout() {
                   visibleColumns={controller.visibleColumns}
                   selectedRecordId={String(controller.selectedRecord?.id ?? '')}
                   canEdit={controller.canEdit}
-                  columnFilters={controller.activeColumnFilters}
-                  onApplyColumnFilter={controller.setColumnFilter}
+                  canRemove={controller.canRemove}
                   renderCell={controller.renderCell}
                   onEditRecord={controller.startEditForRecord}
+                  onDeleteRecord={(record) => {
+                    controller.selectRecord(record)
+                    controller.deleteRecordMutation.mutate()
+                  }}
                   onSelectRecord={controller.selectRecord}
                 />
               ) : null}
